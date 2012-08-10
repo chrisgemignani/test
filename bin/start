@@ -1,0 +1,18 @@
+# start scripts modeled after
+# http://www.slideshare.net/ericholscher/deploying-on-the-cutting-edge
+#
+SCRIPT_DIR=$(dirname $0)
+SERVICE_DIR=$(cd $SCRIPT_DIR && cd ../ && pwd)
+
+cd $SERVICE_DIR
+sudo supervisorctl pid > /dev/null 2>&1
+if [ "$?" != "0" ]; then
+	echo "Supervisord not running, starting."
+	sudo supervisord
+	echo "Supervisord running, starting all processes"
+	sudo supervisorctl start all
+else
+	echo "Supervisord running, starting all processes"
+	sudo supervisorctl start all
+fi
+cd - > /dev/null 2>&1
