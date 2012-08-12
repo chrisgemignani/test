@@ -14,7 +14,9 @@ from fabric.api import run, local, abort, env, put, settings, cd, task
 from fabric.contrib import django
 from fabric.decorators import runs_once
 from fabric.contrib.files import exists
+from fabric.contrib.project import rsync_project
 from fabric.context_managers import cd, lcd, settings, hide
+
 
 import sys
 sys.path.append('.')
@@ -48,9 +50,14 @@ def prepare():
     if confirm("About to do local processing to get code ready to deploy.\nAre you on the deploy server?"):
         print "No prepare actions required."
 
+
 @task
 def tag():
     """
+	- tag the git checkout
+	does the current rev have a tag already
+	`git tag --contains HEAD`
+	strftime('%Y%m%d_%H-%M-%S')
     """
     if confirm("About to tag the current code with the current date/time.\nAre you on the deploy server?"):
         from time import strftime
