@@ -7,6 +7,7 @@ Change all the things marked CHANGEME. Other things can be left at their
 defaults if you are happy with the default layout.
 """
 from fabric.contrib.console import confirm
+from fabric.tasks import execute
 
 import posixpath
 
@@ -17,10 +18,13 @@ from fabric.contrib.files import exists
 from fabric.contrib.project import rsync_project
 from fabric.context_managers import cd, lcd, settings, hide
 
+
 env.key_filename = '~/.ssh/slice-keypair'
 
 SERVICE = 'test'
 DEPLOY_LOCATION = '/mnt/services/' + SERVICE
+VIRTUALENV_DIR = 'env'
+
 
 
 import sys
@@ -86,10 +90,15 @@ def sync():
     rsync_project(
         remote_dir=DEPLOY_LOCATION,
         local_dir='./',
-        exclude=['.idea/', '*.pyc', '.git/', 'build/'],
+        exclude=['.idea/', '*.pyc', '.git/', 'build/', 'env/'],
         delete=True
     )
 
+
+@task
+def test():
+    with cd("/mnt/services/"):
+        run("ls -la")
 
 
 def virtualenv(venv_dir):
@@ -107,22 +116,29 @@ def run_venv(command, **kwargs):
     run("source %s/bin/activate" % env.venv + " && " + command, **kwargs)
 
 
+
 def install_dependencies():
-    ensure_virtualenv()
-    with virtualenv(venv_dir):
-        with cd(src_dir):
+    with virtualenv(DEPLOY_LOCATION + '/' + VIRTUALENV_DIR):
+        with cd(DEPLOY_LOCATION):
             run_venv("pip install -r requirements.txt")
 
 
+@task
 def ensure_virtualenv():
-    if exists(venv_dir):
-        return
+    """
+    Ensure the virtualenv exists and is up to date
+    """
+    if exists(DEPLOY_LOCATION + '/' + VIRTUALENV_DIR):
+        print "Virtual environment exists"
 
-    with cd(DJANGO_APP_ROOT):
-        run("virtualenv --no-site-packages --python=%s %s" %
-            (PYTHON_BIN, VENV_SUBDIR))
-        run("echo %s > %s/lib/%s/site-packages/projectsource.pth" %
-            (src_dir, VENV_SUBDIR, PYTHON_BIN))
+    else:
+        with cd(DEPLOY_LOCATION):
+            run("virtualenv --no-site-packages %s" % VIRTUALENV_DIR)
+
+    with virtualenv(DEPLOY_LOCATION + '/' + VIRTUALENV_DIR):
+        with cd(DEPLOY_LOCATION):
+            run_venv("pip install --upgrade --requirement=requirements.txt")
+
 
 
 def ensure_src_dir():
