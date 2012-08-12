@@ -137,8 +137,9 @@ def configure():
     """
     Add the appropriate configuration files for a deploy
     """
-    sudo("sudo ln -s /mnt/services/test/etc/hello.conf hello.conf")
-
+    sudo("ln -s /mnt/services/test/etc/test.conf /etc/supervisor/conf.d/test.conf")
+    sudo("supervisorctl reread")
+    sudo("supervisorctl update")
 
 
 @task
@@ -149,6 +150,9 @@ def sync():
         exclude=['.idea/', '*.pyc', '.git/', 'build/', 'env/', 'var/log/'],
         delete=True
     )
+    with cd(DEPLOY_LOCATION):
+        run('test -d var/log || mkdir -p var/log')
+
     ensure_virtualenv()
 
 
