@@ -7,6 +7,7 @@ Change all the things marked CHANGEME. Other things can be left at their
 defaults if you are happy with the default layout.
 """
 from fabric.contrib.console import confirm
+from fabric.operations import sudo
 from fabric.tasks import execute
 
 import posixpath
@@ -32,7 +33,35 @@ sys.path.append('.')
 django.settings_module('hello.hello.settings')
 
 
-env.hosts = ['ubuntu@ec2-23-20-195-225.compute-1.amazonaws.com']
+env.hosts = ['ubuntu@ec2-23-22-211-41.compute-1.amazonaws.com']
+
+def _get_host_name():
+    hostname = run("curl -s http://169.254.169.254/latest/meta-data/public-hostname")
+    return hostname
+
+
+@task
+def install_server_packages():
+    """
+    Install initial dependencies to run slice server
+    :return:
+    """
+    # NEEDED FOR ec2-tools
+    #run('sudo emacs /etc/apt/sources.list')
+    #run('# Add multiverse')
+    run('sudo apt-get update')
+    run('sudo apt-get install -y build-essential python-dev python-setuptools emacs23 git-core python-virtualenv')
+    run('sudo easy_install pip')
+    run('sudo apt-get install -y unattended-upgrades')
+    #run('# install security upgrades daily')
+    run('sudo apt-get install -y nginx supervisor')
+    run('sudo test -d /mnt/services || mkdir -p /mnt/services')
+    run('sudo chmod 777 /mnt/services')
+
+    # finally connect to the machine and run
+    #sudo dpkg-reconfigure unattended-upgrades
+
+
 
 
 @task
@@ -60,6 +89,7 @@ def prepare():
     """
     from django.conf import settings
     if confirm("About to do local processing to get code ready to deploy.\nAre you on the deploy server?"):
+        #TODO: collectstatic
         print "No prepare actions required."
 
 
@@ -102,13 +132,12 @@ def ensure_virtualenv():
             run_venv("pip install --upgrade --requirement=requirements.txt")
 
 
-
 @task
 def sync():
     rsync_project(
         remote_dir=DEPLOY_LOCATION,
         local_dir='./',
-        exclude=['.idea/', '*.pyc', '.git/', 'build/', 'env/'],
+        exclude=['.idea/', '*.pyc', '.git/', 'build/', 'env/', 'var/log/'],
         delete=True
     )
     ensure_virtualenv()
@@ -170,7 +199,7 @@ def webserver_stop():
     """
     Stop the webserver that is running the Django instance
     """
-    run(DJANGO_SERVER_STOP)
+    sudo('/etc/init.d/nginx stop')
 
 
 @task
@@ -178,20 +207,17 @@ def webserver_start():
     """
     Startsp the webserver that is running the Django instance
     """
-    run(DJANGO_SERVER_START)
+    sudo('/etc/init.d/nginx start')
 
 
 @task
 def webserver_restart():
     """
-    Restarts the webserver that is running the Django instance
+    Restarts the webserver
     """
-    if DJANGO_SERVER_RESTART:
-        run(DJANGO_SERVER_RESTART)
-    else:
-        with settings(warn_only=True):
-            webserver_stop()
-        webserver_start()
+    with settings(warn_only=True):
+        webserver_stop()
+    webserver_start()
 
 
 def build_static():
