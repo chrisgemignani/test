@@ -86,6 +86,24 @@ def tag():
 
 
 @task
+def ensure_virtualenv():
+    """
+    Ensure the virtualenv exists and is up to date
+    """
+    if exists(DEPLOY_LOCATION + '/' + VIRTUALENV_DIR):
+        print "Virtual environment exists"
+
+    else:
+        with cd(DEPLOY_LOCATION):
+            run("virtualenv --no-site-packages %s" % VIRTUALENV_DIR)
+
+    with virtualenv(DEPLOY_LOCATION + '/' + VIRTUALENV_DIR):
+        with cd(DEPLOY_LOCATION):
+            run_venv("pip install --upgrade --requirement=requirements.txt")
+
+
+
+@task
 def sync():
     rsync_project(
         remote_dir=DEPLOY_LOCATION,
@@ -93,6 +111,7 @@ def sync():
         exclude=['.idea/', '*.pyc', '.git/', 'build/', 'env/'],
         delete=True
     )
+    ensure_virtualenv()
 
 
 @task
@@ -121,23 +140,6 @@ def install_dependencies():
     with virtualenv(DEPLOY_LOCATION + '/' + VIRTUALENV_DIR):
         with cd(DEPLOY_LOCATION):
             run_venv("pip install -r requirements.txt")
-
-
-@task
-def ensure_virtualenv():
-    """
-    Ensure the virtualenv exists and is up to date
-    """
-    if exists(DEPLOY_LOCATION + '/' + VIRTUALENV_DIR):
-        print "Virtual environment exists"
-
-    else:
-        with cd(DEPLOY_LOCATION):
-            run("virtualenv --no-site-packages %s" % VIRTUALENV_DIR)
-
-    with virtualenv(DEPLOY_LOCATION + '/' + VIRTUALENV_DIR):
-        with cd(DEPLOY_LOCATION):
-            run_venv("pip install --upgrade --requirement=requirements.txt")
 
 
 
