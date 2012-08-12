@@ -86,7 +86,7 @@ def sync():
     rsync_project(
         remote_dir=DEPLOY_LOCATION,
         local_dir='./',
-        exclude=['.idea/', '*.pyc'],
+        exclude=['.idea/', '*.pyc', '.git/'],
         delete=True
     )
 
