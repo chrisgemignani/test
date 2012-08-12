@@ -25,7 +25,7 @@ env.key_filename = '~/.ssh/slice-keypair'
 SERVICE = 'test'
 DEPLOY_LOCATION = '/mnt/services/' + SERVICE
 VIRTUALENV_DIR = 'env'
-
+DJANGO_PROJECT_DIR = 'hello'
 
 
 import sys
@@ -130,6 +130,15 @@ def ensure_virtualenv():
     with virtualenv(DEPLOY_LOCATION + '/' + VIRTUALENV_DIR):
         with cd(DEPLOY_LOCATION):
             run_venv("pip install --upgrade --requirement=requirements.txt")
+
+
+@task
+def configure():
+    """
+    Add the appropriate configuration files for a deploy
+    """
+    sudo("sudo ln -s /mnt/services/test/etc/hello.conf hello.conf")
+
 
 
 @task
