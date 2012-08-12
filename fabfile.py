@@ -31,7 +31,7 @@ def pull(ref='origin/master'):
 	local('git reset --hard %s' % ref, capture=False)
     """
     from django.conf import settings
-    if confirm("Are you on the deploy server?"):
+    if confirm("About to pull.\nAre you on the deploy server?"):
         if ref:
             local('git reset --hard %s' % ref, capture=True)
 
@@ -45,9 +45,9 @@ def prepare():
 	pre-hook
     """
     from django.conf import settings
-    if confirm("Are you on the deploy server?"):
+    if confirm("About to prepare.\nAre you on the deploy server?"):
         print "No prepare actions required."
-        
+
 
 def virtualenv(venv_dir):
     """
