@@ -6,6 +6,7 @@ Derived from https://bitbucket.org/spookylukey/django-fabfile-starter/raw/f4c87b
 Change all the things marked CHANGEME. Other things can be left at their
 defaults if you are happy with the default layout.
 """
+from fabric.contrib.console import confirm
 
 import posixpath
 
