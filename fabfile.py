@@ -48,6 +48,29 @@ def prepare():
     if confirm("About to do local processing to get code ready to deploy.\nAre you on the deploy server?"):
         print "No prepare actions required."
 
+@task
+def tag():
+    """
+    """
+    if confirm("About to tag the current code with the current date/time.\nAre you on the deploy server?"):
+        from time import strftime
+
+        deploytag = 'deploy' + strftime('%Y%m%d-%H%M%S')
+        result = local('git tag --contains HEAD', capture=True)
+        if result:
+            print "This revision has already been tagged as " + result
+        else:
+            local('git tag -a %s -m "Tagged deploy"' % deploytag, capture=True)
+            local('git push --tags', capture=True)
+            print "This revision has been tagged as " + deploytag
+
+
+#tag
+#	- tag the git checkout
+#	does the current rev have a tag already
+#	`git tag --contains HEAD`
+#	strftime('%Y%m%d_%H-%M-%S')
+#
 
 def virtualenv(venv_dir):
     """
