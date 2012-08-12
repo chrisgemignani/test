@@ -30,13 +30,9 @@ def pull(ref='origin/master'):
 	local('git reset --hard %s' % ref, capture=False)
     """
     from django.conf import settings
-    print settings.TIME_ZONE
-    print "Moo"
-    if ref:
-        local('git reset --hard %s' % ref, capture=True)
-        print ref
-    local('ls')
-    pass
+    if confirm("Are you on the deploy server?"):
+        if ref:
+            local('git reset --hard %s' % ref, capture=True)
 
 
 def virtualenv(venv_dir):
