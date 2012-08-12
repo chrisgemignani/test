@@ -137,9 +137,12 @@ def configure():
     """
     Add the appropriate configuration files for a deploy
     """
+    sudo("rm /etc/supervisor/conf.d/test.conf")
     sudo("ln -s /mnt/services/test/etc/test.conf /etc/supervisor/conf.d/test.conf")
     sudo("supervisorctl reread")
     sudo("supervisorctl update")
+    # TODO: Need to set up the nginx config
+    
 
 
 @task
@@ -151,7 +154,7 @@ def sync():
         delete=True
     )
     with cd(DEPLOY_LOCATION):
-        run('test -d var/log || mkdir -p var/log')
+        run('test -d var/log/gunicorn || mkdir -p var/log/gunicorn')
 
     ensure_virtualenv()
 
