@@ -36,6 +36,19 @@ def pull(ref='origin/master'):
             local('git reset --hard %s' % ref, capture=True)
 
 
+
+@task
+def prepare():
+    """
+	do local specific things to get in a state to deploy
+	js lint
+	pre-hook
+    """
+    from django.conf import settings
+    if confirm("Are you on the deploy server?"):
+        print "No prepare actions required."
+        
+
 def virtualenv(venv_dir):
     """
     Context manager that establishes a virtualenv to use.
