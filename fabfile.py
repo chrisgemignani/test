@@ -17,10 +17,18 @@ from fabric.contrib.files import exists
 from fabric.contrib.project import rsync_project
 from fabric.context_managers import cd, lcd, settings, hide
 
+env.key_filename = '~/.ssh/slice-keypair'
+
+SERVICE = 'test'
+DEPLOY_LOCATION = '/mnt/services/' + SERVICE
+
 
 import sys
 sys.path.append('.')
 django.settings_module('hello.hello.settings')
+
+
+env.hosts = ['ubuntu@ec2-23-20-195-225.compute-1.amazonaws.com']
 
 
 @task
@@ -72,12 +80,17 @@ def tag():
             print "This revision has been tagged as " + deploytag
 
 
-#tag
-#	- tag the git checkout
-#	does the current rev have a tag already
-#	`git tag --contains HEAD`
-#	strftime('%Y%m%d_%H-%M-%S')
-#
+
+@task
+def sync():
+    rsync_project(
+        remote_dir=DEPLOY_LOCATION,
+        local_dir='./',
+        exclude=['.idea/', '*.pyc'],
+        delete=True
+    )
+
+
 
 def virtualenv(venv_dir):
     """
