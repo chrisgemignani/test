@@ -3,6 +3,8 @@
 #
 SCRIPT_DIR=$(dirname $0)
 SERVICE_DIR=$(cd $SCRIPT_DIR && cd ../ && pwd)
+echo $SCRIPT_DIR 
+echo $SERVICE_DIR
 
 cd $SERVICE_DIR
 sudo supervisorctl pid > /dev/null 2>&1
